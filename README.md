@@ -21,6 +21,17 @@ This project utilizes particles to render volume-based cursed techniques:
 * **Domain Expansion: Malevolent Shrine**
     * **Visuals:** A dark, ominous aura representing the King of Curses.
     * **Trigger:** Flat hand / Prayer gesture.
+ 
+### Changes:
+* **Hollow Purple Trigger**
+    * Strict upward position
+    * Modified to mimic "flick" gesture (not much changed from pinch)
+    * Added middle finger + thumb
+* **Red Trigger**
+    * Strict upward position
+* **Malevolent Shrine Trigger**
+    * Required two hands
+    * Modified to mimic touching pair of middle fingers and ring fingers
 
 ## Getting Started
 
