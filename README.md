@@ -18,7 +18,7 @@ This project utilizes particles to render volume-based cursed techniques:
 * **Domain Expansion: Malevolent Shrine**
     * **Visuals:** A dark, ominous aura representing the King of Curses.
     * **Trigger:** Flat hand / Prayer gesture.
-* **Domain Expansion:** All-Encompassing Equivocal Love (True Mutual Love)
+* **Domain Expansion: All-Encompassing Equivocal Love (True Mutual Love)**
     * **Visuals:** A sea of crosses and katanas bound by tied massive knot symbolizing red string of fate and eternal love.
     * **Trigger:** One hand fist/clenched and the other open hand back hand facing position
 
