@@ -198,6 +198,107 @@
             } else return { x: 0, y: 0, z: 0, r: 0, g: 0, b: 0, s: 0 };
         }
 
+        function getLove(i) {
+            const total = COUNT;
+            if (i < total * 0.3) return { x: (Math.random() - 0.5) * 80, y: -15, z: (Math.random() - 0.5) * 80, r: 0.2, g: 0.2, b: 0.2, s: 0.6 }; //floor
+            else if (i < total * 0.35) {
+                const t = Math.random() * Math.PI;
+                const horizontalRad = 40;
+                const verticalPos = -15 + (Math.random() * 60);
+                const x = Math.cos(t) * horizontalRad;
+                const z = Math.sin(t) * -horizontalRad;
+                return {
+                    x: x,
+                    y: verticalPos,
+                    z: z + 25,
+                    r: 0.3, g: 0, b: 0.3, s: 0.9,
+                }; //wall/bg
+            }
+
+            // else if (i < total * 0.4) {
+            //     const px = ((i % 4) < 2 ? 1 : -1) * 12; const pz = ((i % 4) % 2 == 0 ? 1 : -1) * 8;
+            //     return { x: px + (Math.random() - 0.5) * 2, y: -15 + Math.random() * 30, z: pz + (Math.random() - 0.5) * 2, r: 0.2, g: 0.2, b: 0.2, s: 0.5 }; //pillar
+            // }
+            else if (i < total * 0.45) {
+                const crossIndex = i % 6;
+                const isHorizontal = (i % 12) >= 6;
+
+                const baseX = Math.sin(crossIndex * 1.5) * 35;
+                const baseZ = Math.cos(crossIndex * 2.2) * 20 - 10;
+
+                if (!isHorizontal) {
+                    //VERTICAL PILLAR
+                    return {
+                        x: baseX + (Math.random() - 0.5) * 1.5,
+                        y: -15 + Math.random() * 35,
+                        z: baseZ + (Math.random() - 0.5) * 1.5,
+                        r: 0.2, g: 0.2, b: 0.2, s: 0.6,
+                    };
+                } else {
+                    //HORIZONTAL BEAM (The Cross)
+                    return {
+                        x: baseX + (Math.random() - 0.5) * 10,
+                        y: 10 + (Math.random() - 0.5),
+                        z: baseZ + (Math.random() - 0.5) * 1.5,
+                        r: 0.2, g: 0.2, b: 0.2, s: 0.6
+                    };
+                }
+            }
+            else if (i < total * 0.6) {
+                const t = Math.random() * Math.PI;
+                const horizontalRad = 40;
+                const thickness = (Math.random() - 0.5);
+                const x = Math.cos(t) * horizontalRad;
+                const z = Math.sin(t) * -horizontalRad;
+
+                const isWhite = (i % 2 === 1);
+                const mixR = isWhite ? 0.3 : 0.8; // White (0.3) or Red (0.8)
+                const mixG = isWhite ? 0.3 : 0.0; // White (0.3) or Red (0.0)
+                const mixB = isWhite ? 0.3 : 0.0; // White (0.3) or Red (0.0)
+
+                // --- KNOT LOGIC ---
+                // This creates 10 equally spaced "zones" for the knots
+                const knotCount = 10;
+                const segment = (t / Math.PI) * knotCount;
+                const localT = segment % 1; // 0.0 to 1.0 within a single knot area
+
+                // Only use some particles to draw the knots (e.g., if they are near the center of a segment)
+                const isKnotParticle = (i % 4 == 0);
+                if (isKnotParticle) {
+                    // 1. Two Circles at the top
+                    if (localT > 0.4 && localT < 0.6) {
+                        const side = (i % 2 === 0) ? -3 : 3;
+                        return {
+                            x: x + side,
+                            y: 2 + (Math.random() + 0.5),
+                            z: z + 20,
+                            // r: 0.8, g: 0, b: 0, s: 0.6,
+                            r: mixR, g: mixG, b: mixB, s: 2.0,
+                        }
+                    }
+                    // 2. The "^" shape at the Bottom
+                    else if (localT > 0.5 && localT < 0.9) {
+                        const upwardSlant = (-0.7 + Math.abs(localT - 0.75)) * 10;
+                        return {
+                            x: x, // Horizontal spread of the ^
+                            y: 13 + upwardSlant,         // Vertical peak
+                            z: z + 20,
+                            // r: 0.8, g: 0, b: 0, s: 0.6
+                            r: mixR, g: mixG, b: mixB, s: 1.2,
+                        };
+                    }
+                }
+                return {
+                    x: x,
+                    y: 5 + thickness,
+                    z: z + 20,
+                    // r: 0.7, g: 0, b: 0, s: 0.1
+                    r: mixR, g: mixG, b: mixB, s: 0.1,
+                }; //ribbon
+            }
+            else return { x: 0, y: 0, z: 0, r: 0, g: 0, b: 0, s: 0 };
+        }
+
         // Hand Tracking
         let currentTech = 'neutral';
         let shakeIntensity = 0;
@@ -207,13 +308,14 @@
         let glowColor = '#00ffff';
 
         const hands = new Hands({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}` });
-        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.7 });
+        hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.9 });
 
         hands.onResults((results) => {
             canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
             let detected = 'neutral';
 
-            if (results.multiHandLandmarks) {
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length == 1) {
+                console.log(results.multiHandLandmarks);
                 results.multiHandLandmarks.forEach((lm) => {
                     drawConnectors(canvasCtx, lm, HAND_CONNECTIONS, { color: glowColor, lineWidth: 5 });
                     drawLandmarks(canvasCtx, lm, { color: '#fff', lineWidth: 1, radius: 2 });
@@ -243,21 +345,143 @@
             }
 
             if (results.multiHandLandmarks.length >= 2) {
+                results.multiHandLandmarks.forEach((lm) => {
+                    drawConnectors(canvasCtx, lm, HAND_CONNECTIONS, { color: glowColor, lineWidth: 5 });
+                    drawLandmarks(canvasCtx, lm, { color: '#fff', lineWidth: 1, radius: 2 });
+                });
+
+                //=== SHRINE DE ===
+                const checkCursedHandPose = (hand) => {
+                    //side view check
+                    const palmWidth = Math.abs(hand[5].x - hand[17].x);
+                    const isSideView = palmWidth < 0.6;
+
+                    //middle and ring open and upright check
+                    const dxH1Middle = Math.abs(hand[12].x - hand[9].x);
+                    const dyH1Middle = Math.abs(hand[12].y - hand[9].y);
+                    const isMiddleUp = dyH1Middle > dxH1Middle && hand[12].y < hand[9].y;
+
+                    const dxH1Ring = Math.abs(hand[16].x - hand[13].x);
+                    const dyH1Ring = Math.abs(hand[16].y - hand[13].y);
+                    const isRingUp = dyH1Ring > dxH1Ring && hand[16].y < hand[13].y;
+
+                    //pinky curled check
+                    const isCurlIndex = hand[8].y > hand[6].y;
+                    const isCurlPinky = hand[20].y > hand[18].y;
+
+                    return isSideView && isMiddleUp && isRingUp && isCurlPinky;
+                };
+
                 const hand1 = results.multiHandLandmarks[0];
                 const hand2 = results.multiHandLandmarks[1];
 
-                const ringPinch = Math.hypot(hand1[16].x - hand2[16].x, hand1[16].y - hand2[16].y) < 0.04;
-                const midPinch = Math.hypot(hand1[12].x - hand2[12].x, hand1[12].y - hand2[12].y);
+                const interHandMiddleDist = Math.hypot(hand1[12].x - hand2[12].x, hand1[12].y - hand2[12].y);
+                const interHandRingDist = Math.hypot(hand1[12].x - hand2[12].x, hand1[12].y - hand2[12].y);
 
-                const dxRing = hand1[16].x - hand2[16].x;
-                const dyRing = Math.abs(hand1[16].y - hand2[16].y);
-                const dxMid = hand1[12].x - hand2[12].x;
-                const dyMid = Math.abs(hand1[12].y - hand2[12].y);
+                let isHandPoseShrineOK = false;
+                let isHandPoseLoveOK = false;
 
-                const isRingUpright = dyRing > dxRing;
-                const isMidUpright = dyMid > dxMid;
 
-                if ((midPinch < 0.04 && isMidUpright) || (ringPinch < 0.04 && isRingUpright)) detected = 'shrine';
+                // if (checkCursedHandPose(hand1) && checkCursedHandPose(hand2)) {
+                //     isHandPoseShrineOK = true;
+
+                //     if (isHandPoseShrineOK && (interHandMiddleDist < 0.05 && interHandRingDist < 0.05)) detected = 'shrine';
+                //     console.log(detected);
+                // } else {
+                //     isHandPoseShrineOK = false;
+                // }
+                //=== END OF SHRINE DE ===
+
+                //=== LOVE DE ===
+                const checkCursedHandPoseComeOn = (hand) => {
+                    const thumbTip = hand[4];
+                    const indexTip = hand[8];
+                    const middleTip = hand[12];
+                    const ringTip = hand[16];
+                    const pinkyTip = hand[20];
+
+                    const indexDCP = hand[7];
+                    const middleDCP = hand[11];
+                    const ringDCP = hand[15];
+                    const pinkyDCP = hand[19];
+
+                    const indexPIP = hand[6];
+                    const middlePIP = hand[10];
+                    const ringPIP = hand[14];
+                    const pinkyPIP = hand[18];
+
+                    const thumbIP = hand[3];
+
+                    const indexMCP = hand[5];
+                    const middleMCP = hand[9];
+                    const ringMCP = hand[13];
+                    const pinkyMCP = hand[17];
+
+                    // Check if clenched fist
+                    const isThumbCurled = thumbTip.y > thumbIP.y;
+                    const isPinkyCurled = pinkyTip.y > pinkyPIP.y;
+
+                    // Check if index, middle, and ring fingers are up
+                    const isIndexUp = indexTip.y < indexPIP.y;
+                    const isMiddleUp = middleTip.y < middlePIP.y;
+                    const isRingUp = ringTip.y < ringPIP.y;
+
+                    return isThumbCurled && isPinkyCurled && isIndexUp && isMiddleUp && isRingUp;
+                };
+
+                const checkCursedHandPoseClenched = (hand) => {
+                    const thumbTip = hand[4];
+                    const indexTip = hand[8];
+                    const middleTip = hand[12];
+                    const ringTip = hand[16];
+                    const pinkyTip = hand[20];
+
+                    const indexDCP = hand[7];
+                    const middleDCP = hand[11];
+                    const ringDCP = hand[15];
+                    const pinkyDCP = hand[19];
+
+                    const indexPIP = hand[6];
+                    const middlePIP = hand[10];
+                    const ringPIP = hand[14];
+                    const pinkyPIP = hand[18];
+
+                    const thumbIP = hand[3];
+
+                    const indexMCP = hand[5];
+                    const middleMCP = hand[9];
+                    const ringMCP = hand[13];
+                    const pinkyMCP = hand[17];
+
+                    // Check if clenched fist
+                    // const isThumbCurled = thumbTip.y > thumbIP.y;
+                    const isIndexCurled = indexTip.y > indexMCP.y;
+                    const isMiddleCurled = middleTip.y > middleMCP.y;
+                    const isRingCurled = ringTip.y > ringMCP.y;
+                    const isPinkyCurled = pinkyTip.y > pinkyPIP.y;
+
+                    // Check if index, middle, and ring fingers are up
+                    // const isIndexUp = indexTip.y < indexPIP.y;
+                    // const isMiddleUp = middleTip.y < middlePIP.y;
+                    // const isRingUp = ringTip.y < ringPIP.y;
+
+                    return isIndexCurled && isMiddleCurled && isRingCurled && isPinkyCurled
+                };
+
+                if (checkCursedHandPose(hand1) && checkCursedHandPose(hand2)) {
+                    isHandPoseShrineOK = true;
+
+                    if (isHandPoseShrineOK && (interHandMiddleDist < 0.05 && interHandRingDist < 0.05)) detected = 'shrine';
+                    console.log(detected);
+                }
+                else if (checkCursedHandPoseClenched(hand1) && checkCursedHandPoseClenched(hand2)) {
+                    isHandPoseLoveOK = true;
+
+                    if (isHandPoseLoveOK) detected = 'love';
+                    console.log(detected);
+                }
+                //=== END OF LOVE DE ===
+
             }
             updateState(detected);
         });
@@ -272,6 +496,7 @@
             else if (tech === 'purple') { glowColor = '#bb00ff'; nameEl.innerText = "Secret Technique: Hollow Purple"; bloomPass.strength = 4.0; }
             else if (tech === 'void') { glowColor = '#00ffff'; nameEl.innerText = "Domain Expansion: Infinite Void"; bloomPass.strength = 2.0; }
             else if (tech === 'red') { glowColor = '#ff3333'; nameEl.innerText = "Reverse Cursed Technique: Red"; bloomPass.strength = 2.5; }
+            else if (tech === 'love') { glowColor = '#e600cb'; nameEl.innerText = "Domain Expansion: Mutual Love"; bloomPass.strength = 2.5; }
             else { glowColor = '#00ffff'; nameEl.innerText = "Neutral State"; bloomPass.strength = 1.0; }
 
             for (let i = 0; i < COUNT; i++) {
@@ -286,6 +511,7 @@
                 else if (tech === 'void') p = getVoid(i);
                 else if (tech === 'purple') p = getPurple(i);
                 else if (tech === 'shrine') p = getShrine(i);
+                else if (tech === 'love') p = getLove(i);
 
                 targetPositions[i * 3] = p.x; targetPositions[i * 3 + 1] = p.y; targetPositions[i * 3 + 2] = p.z;
                 targetColors[i * 3] = p.r; targetColors[i * 3 + 1] = p.g; targetColors[i * 3 + 2] = p.b;
@@ -305,6 +531,8 @@
         // Animation
         function animate() {
             requestAnimationFrame(animate);
+
+            const pulse = Math.sin(Date.now() * 0.002);
 
             if (shakeIntensity > 0) {
                 renderer.domElement.style.transform = `translate(${(Math.random() - 0.5) * shakeIntensity * 40}px, ${(Math.random() - 0.5) * shakeIntensity * 40}px)`;
@@ -335,6 +563,15 @@
             } else if (currentTech === 'shrine') {
                 // FORCE UPRIGHT: Reset and freeze all rotations
                 particles.rotation.set(0, 0, 0);
+            } else if (currentTech === 'love') {
+                // FORCE UPRIGHT: Reset and freeze all rotations
+                particles.rotation.set(0, 0, 0);
+
+                particles.position.z = pulse;
+                shakeIntensity = 0.05;
+                if (shakeIntensity > 0) {
+                    particles.position.z = pulse * (1 + shakeIntensity);
+                }
             } else {
                 // Default Neutral rotation
                 particles.rotation.y += 0.005;
