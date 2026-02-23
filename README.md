@@ -30,7 +30,7 @@ You need a modern web browser (Chrome, Edge, Firefox) and a webcam.
 ### Installation
 1.  **Clone the repo**
     ```bash
-    git clone [https://github.com/ue-an/SATORU-clone](https://github.com/reinesana/SAT0RU.git)
+    git clone [https://github.com/ue-an/SATORU-clone](https://github.com/ue-an/SATORU-clone)
     cd SAT0RU-clone
     ```
 
