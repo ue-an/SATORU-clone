@@ -418,16 +418,13 @@
                     const ringMCP = hand[13];
                     const pinkyMCP = hand[17];
 
-                    // Check if clenched fist
-                    const isThumbCurled = thumbTip.y > thumbIP.y;
-                    const isPinkyCurled = pinkyTip.y > pinkyPIP.y;
-
-                    // Check if index, middle, and ring fingers are up
+                    // Check if index, middle, ring, and pinky fingers are up
                     const isIndexUp = indexTip.y < indexPIP.y;
                     const isMiddleUp = middleTip.y < middlePIP.y;
                     const isRingUp = ringTip.y < ringPIP.y;
+                    const isPinkyUp = pinkyTip.y < pinkyPIP.y;
 
-                    return isThumbCurled && isPinkyCurled && isIndexUp && isMiddleUp && isRingUp;
+                    return isIndexUp && isMiddleUp && isRingUp && isPinkyUp;
                 };
 
                 const checkCursedHandPoseClenched = (hand) => {
@@ -475,7 +472,7 @@
                     if (isHandPoseShrineOK && (interHandMiddleDist < 0.05 && interHandRingDist < 0.05)) detected = 'shrine';
                     console.log(detected);
                 }
-                else if (checkCursedHandPoseClenched(hand1) && checkCursedHandPoseClenched(hand2)) {
+                else if (checkCursedHandPoseComeOn(hand1) && checkCursedHandPoseClenched(hand2)) {
                     isHandPoseLoveOK = true;
 
                     if (isHandPoseLoveOK) detected = 'love';
