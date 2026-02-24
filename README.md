@@ -34,8 +34,8 @@ You need a modern web browser (Chrome, Edge, Firefox) and a webcam.
     cd SAT0RU-clone
     ```
 
-Original Repo:
-https://github.com/reinesana/SAT0RU.git
+    Original Repo:
+    https://github.com/reinesana/SAT0RU.git
 
 2.  **Run the project**
     **VS Code:** Install the "Live Server" extension, right-click `index.html`, and select "Open with Live Server".
